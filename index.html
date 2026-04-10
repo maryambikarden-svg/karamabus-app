@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#131108">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karamabus Beni Mellal - Officiel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root { --primary: #131108; --secondary: #df6a05; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: auto; padding: 20px; }
+        
+        /* Header & Navigation */
+        .header { background: var(--primary); color: white; padding: 20px; border-radius: 0 0 20px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .nav-box { background: white; padding: 15px; border-radius: 15px; margin-top: -30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
+        
+        .btn-group { display: flex; gap: 10px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-green { background: var(--success); }
+        .btn-orange { background: var(--secondary); }
+
+        /* Liste des Bus */
+        .bus-list { margin-top: 20px; }
+        .bus-card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--secondary); }
+        .ligne-num { background: var(--secondary); color: white; padding: 5px 10px; border-radius: 5px; }
+
+        /* Modaux (Fenêtres surgissantes) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; overflow-y: auto; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; position: relative; }
+        
+        .form-section { border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px; }
+        label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+        .bank-inputs { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+
+        /* Carte Digitale */
+        #result-card { display: none; background: white; border: 2px solid var(--primary); border-radius: 15px; padding: 15px; margin-top: 20px; }
+        .card-inner { display: flex; gap: 15px; align-items: center; }
+        .photo-placeholder { width: 80px; height: 100px; background: #ddd; display: flex; align-items: center; text-align: center; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🚌 Karamabus</h1>
+    <p>Transport Urbain de Beni Mellal</p>
+</div>
+
+<div class="container">
+    <div class="nav-box">
+        <input type="text" id="search-input" placeholder="🔍 Rechercher ligne ou destination..." onkeyup="filtrerBus()">
+        <div class="btn-group">
+            <button class="btn-green" onclick="toggleModal('modal-abo')">🎓 Abonnement</button>
+            <button class="btn-orange" onclick="toggleModal('modal-ticket')">🎟️ Ticket</button>
+        </div>
+    </div>
+
+    <div id="result-card">
+        <h3 style="color: var(--primary); margin-top: 0;">CARTE DIGITALE VALIDE</h3>
+        <div class="card-inner">
+            <div class="photo-placeholder" id="final-photo">PHOTO</div>
+            <div>
+                <p><strong><span id="card-name"></span></strong></p>
+                <p>CIN: <span id="card-cin"></span></p>
+                <p style="font-size: 12px; color: var(--success);">● Mensualité Payée</p>
+            </div>
+            <div id="qrcode"></div>
+        </div>
+    </div>
+
+    <div id="liste-bus" class="bus-list">
+        </div>
+</div>
+
+<div id="modal-abo" class="modal">
+    <div class="modal-content">
+        <h2>Espace Abonnement</h2>
+        
+        <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+            <button onclick="choisirType('nouveau')" id="btn-nouveau" style="background: var(--primary); font-size: 11px;">Nouveau (Créer Carte)</button>
+            <button onclick="choisirType('renouveler')" id="btn-renouveler" style="background: #6c757d; font-size: 11px;">Déjà inscrit (Payer)</button>
+        </div>
+
+        <input type="text" id="user-nom" placeholder="Nom et Prénom">
+        <input type="text" id="user-cin" placeholder="Numéro de CIN">
+        
+        <div id="zone-photo">
+            <label>Photo d'identité :</label>
+            <input type="file" id="user-photo-input" accept="image/*">
+        </div>
+
+        <div class="form-section">
+            <h4>💳 Paiement Sécurisé</h4>
+            <input type="text" placeholder="N° de carte bancaire">
+            <div class="bank-inputs">
+                <input type="text" placeholder="MM/AA">
+                <input type="text" placeholder="CVV">
+            </div>
+        </div>
+
+        <button class="btn-green" style="width: 100%; margin-top: 15px;" id="btn-valider-abo" onclick="payerAbonnement()">Activer mon mois</button>
+        <button onclick="toggleModal('modal-abo')" style="background: #ccc; color: #333; width: 100%; margin-top: 5px;">Annuler</button>
+    </div>
+</div>
+
+<div id="modal-ticket" class="modal">
+    <div class="modal-content">
+        <h2>Achat Ticket Unitaire</h2>
+        <label>Choisir la destination :</label>
+        <select id="dest-select" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+            <option value="3">Centre Ville - 3.00 DH</option>
+            <option value="4">Université M'ghila - 4.00 DH</option>
+            <option value="5">Foum El Anceur - 5.00 DH</option>
+            <option value="7">Kasba Tadla - 7.00 DH</option>
+        </select>
+        
+        <div class="form-section">
+            <input type="text" placeholder="N° de carte bancaire">
+            <button class="btn-orange" style="width: 100%; margin-top: 10px;" onclick="payerTicket()">Payer le Ticket</button>
+        </div>
+        <button onclick="toggleModal('modal-ticket')" style="background: #ccc; color: #333; width: 100%; margin-top: 5px;">Fermer</button>
+    </div>
+</div>
+
+<script>
+    let tousLesBus = [];
+    let typeAbonnement = 'nouveau';
+     let busData = []; // <--- Vérifie que cette ligne existe au tout début du script
+    
+    async function init() {
+        const res = await fetch('/api/trajets');
+        busData = await res.json();
+        renderBus(busData);
+    }
+      function renderBus(data) {
+        const container = document.getElementById('liste-bus');
+        // On utilise les backticks (accent grave `) pour le HTML
+        container.innerHTML = data.map(bus => `
+            <div class="bus-card">
+                <span class="ligne-num">${bus.ligne}</span>
+                <span>${bus.itineraire}</span>
+            </div>
+        `).join('');
+    }
+
+    function filtrerBus() {
+        const query = document.getElementById('search-input').value.toLowerCase();
+        // On filtre dans busData (qui contient tes lignes du serveur)
+        const filtered = busData.filter(b => 
+            b.ligne.toLowerCase().includes(query) || 
+            b.itineraire.toLowerCase().includes(query)
+        );
+        renderBus(filtered);
+    }
+
+    function toggleModal(id) {
+        const m = document.getElementById(id);
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+
+    function choisirType(type) {
+        typeAbonnement = type;
+        const btnN = document.getElementById('btn-nouveau');
+        const btnR = document.getElementById('btn-renouveler');
+        const zonePhoto = document.getElementById('zone-photo');
+        const btnValider = document.getElementById('btn-valider-abo');
+
+        if (type === 'nouveau') {
+            btnN.style.background = 'var(--primary)';
+            btnR.style.background = '#6c757d';
+            zonePhoto.style.display = 'block';
+            btnValider.innerText = "Payer et Créer ma Carte";
+        } else {
+            btnR.style.background = 'var(--primary)';
+            btnN.style.background = '#6c757d';
+            zonePhoto.style.display = 'none';
+            btnValider.innerText = "Payer ma Mensualité";
+        }
+    }
+
+   
+   
+
+    // 4. Paiements et Cartes
+    function payerAbonnement() {
+        const nom = document.getElementById('user-nom').value;
+        const cin = document.getElementById('user-cin').value;
+
+        if(!nom || !cin) return alert("Veuillez remplir vos identifiants");
+
+        // Simulation de succès de paiement
+        alert("Paiement accepté ! Votre carte digitale est activée.");
+        
+        document.getElementById('card-name').innerText = nom;
+        document.getElementById('card-cin').innerText = cin;
+        
+        const qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, { text: `VALID:${cin}:${nom}`, width: 64, height: 64 });
+        
+        document.getElementById('result-card').style.display = 'block';
+        toggleModal('modal-abo');
+    }
+
+    function payerTicket() {
+        const prix = document.getElementById('dest-select').value;
+        alert(`Paiement de ${prix} DH effectué. Ticket valide pour 1h.`);
+        toggleModal('modal-ticket');
+    }
+
+    init();
+</script>
+</body>
+</html>

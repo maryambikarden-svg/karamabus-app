@@ -1,0 +1,15 @@
+{
+  "name": "Karamabus Beni Mellal",
+  "short_name": "Karamabus",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#131108",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

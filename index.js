@@ -6,7 +6,7 @@ app.use(express.json());
 
 // Route d'accueil
 app.get('/', (req, res) => {
-    res.send("<h1>Karamabus Beni Mellal</h1><p>Le serveur est en ligne !</p>");
+    res.sendFile(__dirname + '/public/index.html');
 });
 
 // Liste des trajets simplifiée

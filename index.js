@@ -6,7 +6,7 @@ app.use(express.json());
 
 // Route d'accueil
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(__dirname + '/index.html');
 });
 
 // Liste des trajets simplifiée

@@ -1,0 +1,6 @@
+json
+[
+    { "id": 1, "ligne": "Ligne 01", "itineraire": "Riad Salam - EST" },
+    { "id": 2, "ligne": "Ligne 02", "itineraire": "Centre Ville - Gare" },
+    { "id": 3, "ligne": "Ligne 03", "itineraire": "Université - Kasba Tadla" }
+]

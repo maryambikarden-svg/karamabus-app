@@ -1,8 +1,0 @@
-json
-[
-    { "id": 1, "ligne": "Ligne 01", "itineraire": "Riad Salam - EST" },
-    { "id": 2, "ligne": "Ligne 05", "itineraire": "Centre Ville - Gare" },
-    { "id": 3, "ligne": "Ligne 06", "itineraire": "Centre Ville - Université Mghila" },
-    { "id": 4, "ligne": "Ligne 14", "itineraire": "Beni Mellal - Foum Oudi" },
-    { "id": 5, "ligne": "Ligne 17", "itineraire": "Beni Mellal - Kasba Tadla" }
-]

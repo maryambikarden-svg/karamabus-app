@@ -1,195 +1,141 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#131108">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karamabus Beni Mellal - Officiel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
         :root { --primary: #131108; --secondary: #df6a05; --success: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: auto; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 50px; }
+        .container { max-width: 500px; margin: auto; padding: 20px; }
         
-        /* Header & Navigation */
-        .header { background: var(--primary); color: white; padding: 20px; border-radius: 0 0 20px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-box { background: white; padding: 15px; border-radius: 15px; margin-top: -30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; border-radius: 0 0 20px 20px; }
+        .nav-box { background: white; padding: 15px; border-radius: 15px; margin-top: -30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
-        .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-green { background: var(--success); }
         .btn-orange { background: var(--secondary); }
+        .btn-dark { background: var(--primary); }
 
-        /* Liste des Bus */
-        .bus-list { margin-top: 20px; }
-        .bus-card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--secondary); }
-        .ligne-num { background: var(--secondary); color: white; padding: 5px 10px; border-radius: 5px; }
-
-        /* Modaux (Fenêtres surgissantes) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; overflow-y: auto; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; position: relative; }
-        
-        .form-section { border-top: 1px solid #eee; margin-top: 15px; padding-top: 15px; }
-        label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
-        .bank-inputs { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+        /* Modaux */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
 
         /* Carte Digitale */
-        <div id="formulaire-abonnement" class="container">
-    <h2>Demande de Carte Étudiant</h2>
-
-    <div id="step-1" class="form-step">
-        <h3>Étape 1 : Identité</h3>
-        <input type="text" id="nom" placeholder="Votre Nom" required>
-        <input type="text" id="prenom" placeholder="Votre Prénom" required>
-        <button class="btn-next" onclick="nextStep(2)">Suivant</button>
-    </div>
-
-    <div id="step-2" class="form-step" style="display:none;">
-        <h3>Étape 2 : Vérification</h3>
-        <input type="text" id="cin" placeholder="N° Carte d'Identité (CIN)" required>
-        <div class="upload-box">
-            <label>Attestation de scolarité (PDF/Image) :</label>
-            <input type="file" id="attestation" accept="image/*,.pdf">
-        </div>
-        <button class="btn-prev" onclick="nextStep(1)">Retour</button>
-        <button class="btn-next" onclick="nextStep(3)">Suivant</button>
-    </div>
-
-    <div id="step-3" class="form-step" style="display:none;">
-        <h3>Étape 3 : Paiement Sécurisé</h3>
-        <div id="card-element">
-            <input type="text" id="card-num" placeholder="Numéro de carte (16 chiffres)" maxlength="16">
-            <div class="row">
-                <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5">
-                <input type="text" id="card-cvv" placeholder="CVV" maxlength="3">
-            </div>
-        </div>
-        <button class="btn-prev" onclick="nextStep(2)">Retour</button>
-        <button class="btn-pay" onclick="validerPaiement()">Payer l'abonnement</button>
-    </div>
-</div>
+        #result-card { display: none; background: white; padding: 20px; border-radius: 15px; border-left: 8px solid var(--secondary); margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        #qrcode { margin-top: 15px; display: flex; justify-content: center; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1>🚌 Karamabus</h1>
-    <p>Transport Urbain de Beni Mellal</p>
+    <p>Réseau de transport de Beni Mellal</p>
 </div>
 
 <div class="container">
     <div class="nav-box">
-        <input type="text" id="search-input" placeholder="🔍 Rechercher ligne ou destination..." onkeyup="filtrerBus()">
-        <div class="btn-group">
-            <button class="btn-green" onclick="toggleModal('modal-abo')">🎓 Abonnement</button>
+        <input type="text" id="search-input" placeholder="🔍 Rechercher une ligne ou un arrêt..." onkeyup="filtrerBus()">
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-green" onclick="ouvrirAbonnement()">🎓 Abonnement</button>
             <button class="btn-orange" onclick="toggleModal('modal-ticket')">🎟️ Ticket</button>
         </div>
     </div>
 
     <div id="result-card">
-        <h3 style="color: var(--primary); margin-top: 0;">CARTE DIGITALE VALIDE</h3>
-        <div class="card-inner">
-            <div class="photo-placeholder" id="final-photo">PHOTO</div>
+        <div class="card-header">
             <div>
-                <p><strong><span id="card-name"></span></strong></p>
-                <p>CIN: <span id="card-cin"></span></p>
-                <p style="font-size: 12px; color: var(--success);">● Mensualité Payée</p>
+                <h3 id="res-nom">NOM PRENOM</h3>
+                <p id="res-cin" style="color: #666;"></p>
             </div>
-            <div id="qrcode"></div>
+            <div style="color: var(--success); font-weight: bold;">✓ ACTIF</div>
         </div>
+        <div id="qrcode"></div>
+        <button class="btn-dark" onclick="telechargerRecu()">📥 Télécharger Reçu PDF</button>
     </div>
 
-    <div id="liste-bus" class="bus-list">
+    <div id="liste-bus" style="margin-top:20px;">
         </div>
 </div>
 
 <div id="modal-abo" class="modal">
     <div class="modal-content">
-        <h2>Espace Abonnement</h2>
+        <h2 id="titre-abo">Abonnement Etudiant</h2>
         
-        <div style="display: flex; gap: 5px; margin-bottom: 15px;">
-            <button onclick="choisirType('nouveau')" id="btn-nouveau" style="background: var(--primary); font-size: 11px;">Nouveau (Créer Carte)</button>
-            <button onclick="choisirType('renouveler')" id="btn-renouveler" style="background: #6c757d; font-size: 11px;">Déjà inscrit (Payer)</button>
+        <div id="selection-type">
+            <button class="btn-dark" onclick="demarrerParcours('nouveau')">Créer ma 1ère Carte</button>
+            <button class="btn-orange" onclick="demarrerParcours('payer')">Déjà abonné (Payer)</button>
         </div>
 
-        <input type="text" id="user-nom" placeholder="Nom et Prénom">
-        <input type="text" id="user-cin" placeholder="Numéro de CIN">
-        
-        <div id="zone-photo">
-            <label>Photo d'identité :</label>
-            <input type="file" id="user-photo-input" accept="image/*">
-        </div>
-
-        <div class="form-section">
-            <h4>💳 Paiement Sécurisé</h4>
-            <input type="text" placeholder="N° de carte bancaire">
-            <div class="bank-inputs">
-                <input type="text" placeholder="MM/AA">
-                <input type="text" placeholder="CVV">
+        <div id="step-1" style="display:none;">
+            <input type="text" id="field-nom" placeholder="Nom">
+            <input type="text" id="field-prenom" placeholder="Prénom">
+            <input type="text" id="field-cin" placeholder="CIN (ex: AB123456)">
+            <div id="zone-docs">
+                <label style="font-size: 12px;">Attestation de scolarité :</label>
+                <input type="file" id="file-scol">
+                <label style="font-size: 12px;">Photo d'identité :</label>
+                <input type="file" id="file-photo">
             </div>
+            <button class="btn-green" onclick="validerIdentite()">Suivant</button>
         </div>
 
-        <button class="btn-green" style="width: 100%; margin-top: 15px;" id="btn-valider-abo" onclick="payerAbonnement()">Activer mon mois</button>
-        <button onclick="toggleModal('modal-abo')" style="background: #ccc; color: #333; width: 100%; margin-top: 5px;">Annuler</button>
+        <div id="step-2" style="display:none;">
+            <h4>💳 Paiement Sécurisé</h4>
+            <input type="text" id="card-num" placeholder="N° de carte (16 chiffres)" maxlength="16">
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5">
+                <input type="text" id="card-cvv" placeholder="CVV" maxlength="3">
+            </div>
+            <button class="btn-green" onclick="finaliserAbonnement()">Payer et Activer</button>
+        </div>
+
+        <button onclick="toggleModal('modal-abo')" style="background:#eee; color:#333; margin-top:10px;">Fermer</button>
     </div>
 </div>
 
 <div id="modal-ticket" class="modal">
     <div class="modal-content">
-        <h2>Achat Ticket Unitaire</h2>
-        <label>Choisir la destination :</label>
-        <select id="dest-select" style="width: 100%; padding: 10px; margin-bottom: 15px;">
-            <option value="3">Centre Ville - 3.00 DH</option>
-            <option value="4">Université M'ghila - 4.00 DH</option>
-            <option value="5">Foum El Anceur - 5.00 DH</option>
-            <option value="7">Kasba Tadla - 7.00 DH</option>
+        <h2>Achat Ticket Express</h2>
+        <label>Destination :</label>
+        <select id="ticket-dest">
+            <option value="3">Centre Ville (3 DH)</option>
+            <option value="4">Faculté Mghila (4 DH)</option>
+            <option value="5">Foum El Anceur (5 DH)</option>
         </select>
-        
-        <div class="form-section">
-            <input type="text" placeholder="N° de carte bancaire">
-            <button class="btn-orange" style="width: 100%; margin-top: 10px;" onclick="payerTicket()">Payer le Ticket</button>
-        </div>
-        <button onclick="toggleModal('modal-ticket')" style="background: #ccc; color: #333; width: 100%; margin-top: 5px;">Fermer</button>
+        <input type="text" id="t-card" placeholder="N° de carte bancaire">
+        <button class="btn-orange" onclick="validerTicket()">Acheter le Ticket</button>
+        <button onclick="toggleModal('modal-ticket')" style="background:#eee; color:#333;">Annuler</button>
     </div>
 </div>
 
 <script>
-    let tousLesBus = [];
-    let typeAbonnement = 'nouveau';
-     let busData = []; // <--- Vérifie que cette ligne existe au tout début du script
-    
+    let busData = [];
+    let mode = ''; // 'nouveau' ou 'payer'
+
+    // Initialisation
     async function init() {
-        const res = await fetch('/api/trajets');
-        busData = await res.json();
-        renderBus(busData);
-    }
-      function renderBus(data) {
-        const container = document.getElementById('liste-bus');
-        // On utilise les backticks (accent grave `) pour le HTML
-        container.innerHTML = data.map(bus => `
-            <div class="bus-card">
-                <span class="ligne-num">${bus.ligne}</span>
-                <span>${bus.itineraire}</span>
-            </div>
-        `).join('');
+        try {
+            const res = await fetch('/api/trajets');
+            busData = await res.json();
+            renderBus(busData);
+        } catch (e) { console.log("Erreur chargement bus"); }
     }
 
-    function filtrerBus() {
-        const query = document.getElementById('search-input').value.toLowerCase();
-        // On filtre dans busData (qui contient tes lignes du serveur)
-        const filtered = busData.filter(b => 
-            b.ligne.toLowerCase().includes(query) || 
-            b.itineraire.toLowerCase().includes(query)
-        );
-        renderBus(filtered);
+    function renderBus(data) {
+        const container = document.getElementById('liste-bus');
+        container.innerHTML = data.map(b => `
+            <div style="background:white; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid var(--secondary); display:flex; justify-content:space-between;">
+                <strong>${b.ligne}</strong>
+                <span>${b.itineraire}</span>
+            </div>
+        `).join('');
     }
 
     function toggleModal(id) {
@@ -197,87 +143,93 @@
         m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
     }
 
-
-    function choisirType(type) {
-        typeAbonnement = type;
-        const btnN = document.getElementById('btn-nouveau');
-        const btnR = document.getElementById('btn-renouveler');
-        const zonePhoto = document.getElementById('zone-photo');
-        const btnValider = document.getElementById('btn-valider-abo');
-
-        if (type === 'nouveau') {
-            btnN.style.background = 'var(--primary)';
-            btnR.style.background = '#6c757d';
-            zonePhoto.style.display = 'block';
-            btnValider.innerText = "Payer et Créer ma Carte";
-        } else {
-            btnR.style.background = 'var(--primary)';
-            btnN.style.background = '#6c757d';
-            zonePhoto.style.display = 'none';
-            btnValider.innerText = "Payer ma Mensualité";
-        }
-    }
-
-   
-   
-
-    // 4. Paiements et Cartes
-    function payerAbonnement() {
-        const nom = document.getElementById('user-nom').value;
-        const cin = document.getElementById('user-cin').value;
-
-        if(!nom || !cin) return alert("Veuillez remplir vos identifiants");
-
-        // Simulation de succès de paiement
-        alert("Paiement accepté ! Votre carte digitale est activée.");
-        
-        document.getElementById('card-name').innerText = nom;
-        document.getElementById('card-cin').innerText = cin;
-        
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = "";
-        new QRCode(qrContainer, { text: `VALID:${cin}:${nom}`, width: 64, height: 64 });
-        
-        document.getElementById('result-card').style.display = 'block';
+    function ouvrirAbonnement() {
+        document.getElementById('selection-type').style.display = 'block';
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'none';
         toggleModal('modal-abo');
     }
 
-    function payerTicket() {
-        const prix = document.getElementById('dest-select').value;
-        alert(`Paiement de ${prix} DH effectué. Ticket valide pour 1h.`);
+    function demarrerParcours(m) {
+        mode = m;
+        document.getElementById('selection-type').style.display = 'none';
+        document.getElementById('step-1').style.display = 'block';
+        // Si déjà abonné, on cache les imports de documents
+        document.getElementById('zone-docs').style.display = (mode === 'payer') ? 'none' : 'block';
+    }
+
+    function validerIdentite() {
+        const nom = document.getElementById('field-nom').value;
+        const prenom = document.getElementById('field-prenom').value;
+        const cin = document.getElementById('field-cin').value;
+        const cinRegex = /^[A-Z]{1,2}[0-9]{4,6}$/i;
+
+        if(!nom || !prenom || !cin) return alert("Veuillez remplir tous les champs.");
+        if(!cinRegex.test(cin)) return alert("Format de CIN invalide (ex: AB123456)");
+        
+        if(mode === 'nouveau') {
+            const scol = document.getElementById('file-scol').files[0];
+            const photo = document.getElementById('file-photo').files[0];
+            if(!scol || !photo) return alert("Veuillez importer l'attestation et la photo.");
+        }
+
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+    }
+
+    function finaliserAbonnement() {
+        const cNum = document.getElementById('card-num').value;
+        if(cNum.length < 16) return alert("Carte bancaire invalide.");
+
+        const nom = document.getElementById('field-nom').value.toUpperCase();
+        const prenom = document.getElementById('field-prenom').value.toUpperCase();
+        const cin = document.getElementById('field-cin').value.toUpperCase();
+
+        alert("Paiement réussi !");
+        
+        // Affichage de la carte
+        document.getElementById('res-nom').innerText = nom + " " + prenom;
+        document.getElementById('res-cin').innerText = "CIN: " + cin;
+        
+        const qrc = document.getElementById('qrcode');
+        qrc.innerHTML = "";
+        new QRCode(qrc, { text: KARAMABUS-ABO-${cin}, width: 128, height: 128 });
+        
+        document.getElementById('result-card').style.display = 'block';
+        toggleModal('modal-abo');
+        telechargerRecu("ABONNEMENT", nom, cin);
+    }
+
+    function validerTicket() {
+        const cNum = document.getElementById('t-card').value;
+        if(cNum.length < 16) return alert("Carte bancaire invalide.");
+        
+        const dest = document.getElementById('ticket-dest');
+        const label = dest.options[dest.selectedIndex].text;
+        
+        alert("Ticket acheté ! Téléchargement du reçu...");
+        telechargerRecu("TICKET UNITAIRE", "CLIENT PASSAGER", label);
         toggleModal('modal-ticket');
     }
 
+    function telechargerRecu(type, nom, info) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const date = new Date().toLocaleString();
+
+        doc.setFontSize(20);
+        doc.text("RECU KARAMA BUS", 20, 20);
+        doc.setFontSize(12);
+        doc.text(Type: ${type}, 20, 40);
+        doc.text(Date: ${date}, 20, 50);
+        doc.text(Titulaire: ${nom}, 20, 60);
+        doc.text(Détails: ${info}, 20, 70);
+        doc.text("Merci d'utiliser nos lignes de transport.", 20, 90);
+        
+        doc.save(Recu_Karamabus_${nom}.pdf);
+    }
+
     init();
-       function nextStep(stepNumber) {
-    // On cache toutes les étapes
-    document.querySelectorAll('.form-step').forEach(step => {
-        step.style.display = 'none';
-    });
-    
-    // On affiche l'étape demandée
-    document.getElementById('step-' + stepNumber).style.display = 'block';
-}
-
-function validerPaiement() {
-    const cardNum = document.getElementById('card-num').value;
-    const cin = document.getElementById('cin').value;
-    
-    // Simulation de vérification réelle
-    if (cardNum.length < 16) {
-        alert("Erreur : Numéro de carte bancaire invalide.");
-        return;
-    }
-    
-    if (!cin) {
-        alert("Veuillez saisir votre CIN.");
-        return;
-    }
-
-    alert("Paiement validé ! Votre carte d'abonnement Karama Bus est maintenant active.");
-    // Ici, tu peux appeler ta fonction pour générer le QR Code
-    genererTicket(); 
-}
 </script>
 </body>
 </html>

@@ -120,13 +120,23 @@
     let mode = ''; // 'nouveau' ou 'payer'
 
     // Initialisation
-    async function init() {
-        try {
-            const res = await fetch('/api/trajets');
-            busData = await res.json();
-            renderBus(busData);
-        } catch (e) { console.log("Erreur chargement bus"); }
+   async function init() {
+    try {
+        console.log("Tentative de récupération des bus...");
+        const res = await fetch('/api/trajets'); 
+        if (!res.ok) throw new Error("Erreur serveur");
+        busData = await res.json();
+        console.log("Bus reçus :", busData);
+        renderBus(busData);
+    } catch (e) { 
+        console.error("Erreur chargement bus :", e);
+        // Affichage de secours si le serveur ne répond pas
+        renderBus([
+            { ligne: "Ligne 01", itineraire: "Riad Salam - EST" },
+            { ligne: "Ligne 17", itineraire: "Beni Mellal - Kasba Tadla" }
+        ]);
     }
+}
 
     function renderBus(data) {
         const container = document.getElementById('liste-bus');

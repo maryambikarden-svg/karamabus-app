@@ -250,5 +250,34 @@
 
     init();
 </script>
+    function nextStep(stepNumber) {
+    // On cache toutes les étapes
+    document.querySelectorAll('.form-step').forEach(step => {
+        step.style.display = 'none';
+    });
+    
+    // On affiche l'étape demandée
+    document.getElementById('step-' + stepNumber).style.display = 'block';
+}
+
+function validerPaiement() {
+    const cardNum = document.getElementById('card-num').value;
+    const cin = document.getElementById('cin').value;
+    
+    // Simulation de vérification réelle
+    if (cardNum.length < 16) {
+        alert("Erreur : Numéro de carte bancaire invalide.");
+        return;
+    }
+    
+    if (!cin) {
+        alert("Veuillez saisir votre CIN.");
+        return;
+    }
+
+    alert("Paiement validé ! Votre carte d'abonnement Karama Bus est maintenant active.");
+    // Ici, tu peux appeler ta fonction pour générer le QR Code
+    genererTicket(); 
+}
 </body>
 </html>

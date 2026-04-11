@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,16 +14,71 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Route API - Retourner les trajets des bus
+// Route API - Récupérer tous les trajets
 app.get('/api/trajets', (req, res) => {
-    const trajets = [
-        { ligne: "Ligne 01", itineraire: "Riad Salam - EST" },
-        { ligne: "Ligne 05", itineraire: "Centre Ville - Gare" },
-        { ligne: "Ligne 06", itineraire: "Centre Ville - Université Mghila" },
-        { ligne: "Ligne 14", itineraire: "Beni Mellal - Foum Oudi" },
-        { ligne: "Ligne 17", itineraire: "Beni Mellal - Kasba Tadla" }
-    ];
-    res.json(trajets);
+    fs.readFile(path.join(__dirname, 'bus.json'), 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: "Erreur lecture fichier" });
+        }
+        res.json(JSON.parse(data));
+    });
+});
+
+// Route API - Ajouter une nouvelle ligne
+app.post('/api/trajets', (req, res) => {
+    const { ligne, itineraire } = req.body;
+    
+    if (!ligne || !itineraire) {
+        return res.status(400).json({ error: "Données manquantes" });
+    }
+
+    fs.readFile(path.join(__dirname, 'bus.json'), 'utf8', (err, data) => {
+        let trajets = JSON.parse(data);
+        const newId = trajets.length > 0 ? Math.max(...trajets.map(t => t.id)) + 1 : 1;
+        trajets.push({ id: newId, ligne, itineraire });
+        
+        fs.writeFile(path.join(__dirname, 'bus.json'), JSON.stringify(trajets, null, 2), (err) => {
+            if (err) return res.status(500).json({ error: "Erreur sauvegarde" });
+            res.json({ success: true, message: "Ligne ajoutée" });
+        });
+    });
+});
+
+// Route API - Modifier une ligne
+app.put('/api/trajets/:id', (req, res) => {
+    const { ligne, itineraire } = req.body;
+    const id = parseInt(req.params.id);
+
+    fs.readFile(path.join(__dirname, 'bus.json'), 'utf8', (err, data) => {
+        let trajets = JSON.parse(data);
+        const index = trajets.findIndex(t => t.id === id);
+        
+        if (index === -1) {
+            return res.status(404).json({ error: "Ligne non trouvée" });
+        }
+
+        trajets[index] = { id, ligne, itineraire };
+        
+        fs.writeFile(path.join(__dirname, 'bus.json'), JSON.stringify(trajets, null, 2), (err) => {
+            if (err) return res.status(500).json({ error: "Erreur sauvegarde" });
+            res.json({ success: true, message: "Ligne modifiée" });
+        });
+    });
+});
+
+// Route API - Supprimer une ligne
+app.delete('/api/trajets/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+
+    fs.readFile(path.join(__dirname, 'bus.json'), 'utf8', (err, data) => {
+        let trajets = JSON.parse(data);
+        trajets = trajets.filter(t => t.id !== id);
+        
+        fs.writeFile(path.join(__dirname, 'bus.json'), JSON.stringify(trajets, null, 2), (err) => {
+            if (err) return res.status(500).json({ error: "Erreur sauvegarde" });
+            res.json({ success: true, message: "Ligne supprimée" });
+        });
+    });
 });
 
 // Gestion des erreurs 404

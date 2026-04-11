@@ -8,28 +8,161 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        :root { --primary: #131108; --secondary: #df6a05; --success: #27ae60; --bg: #f4f7f6; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 50px; }
-        .container { max-width: 500px; margin: auto; padding: 20px; }
+        :root { 
+            --primary: #131108; 
+            --secondary: #df6a05; 
+            --success: #27ae60; 
+            --bg: #f4f7f6; 
+            --error: #e74c3c;
+        }
         
-        .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; border-radius: 0 0 20px 20px; }
-        .nav-box { background: white; padding: 15px; border-radius: 15px; margin-top: -30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        * { box-sizing: border-box; }
         
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding-bottom: 50px; 
+        }
+        
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            padding: 20px; 
+        }
+        
+        .header { 
+            background: var(--primary); 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-radius: 0 0 20px 20px; 
+        }
+        
+        .header h1 { margin: 0; font-size: 28px; }
+        .header p { margin: 5px 0 0 0; opacity: 0.9; }
+        
+        .nav-box { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-top: -30px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        
+        .nav-box input { margin-bottom: 10px; }
+        
+        .button-group { 
+            display: flex; 
+            gap: 10px; 
+        }
+        
+        .button-group button { margin: 0; flex: 1; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 14px;
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 8px; 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover { opacity: 0.9; }
+        button:active { opacity: 0.8; }
         
         .btn-green { background: var(--success); }
         .btn-orange { background: var(--secondary); }
         .btn-dark { background: var(--primary); }
+        .btn-close { background: #eee; color: #333; }
 
-        /* Modaux */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.9); 
+            z-index: 100; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content { 
+            background: white; 
+            padding: 20px; 
+            width: 90%; 
+            max-width: 400px; 
+            border-radius: 15px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+        
+        .modal-content h2 { margin-top: 0; }
 
-        /* Carte Digitale */
-        #result-card { display: none; background: white; padding: 20px; border-radius: 15px; border-left: 8px solid var(--secondary); margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; }
-        #qrcode { margin-top: 15px; display: flex; justify-content: center; }
+        #result-card { 
+            display: none; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            border-left: 8px solid var(--secondary); 
+            margin-top: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
+        
+        #result-card.active { display: block; }
+        
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px;
+        }
+        
+        .card-header h3 { margin: 0; }
+        .card-header p { margin: 5px 0 0 0; }
+        
+        #qrcode { 
+            margin: 15px 0; 
+            display: flex; 
+            justify-content: center; 
+        }
+
+        .bus-line { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 10px; 
+            border-left: 5px solid var(--secondary); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        
+        .bus-line strong { color: var(--primary); }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 12px; margin-bottom: 5px; color: #666; }
+
+        .hidden { display: none !important; }
+
+        .error-msg { color: var(--error); font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -42,9 +175,9 @@
 <div class="container">
     <div class="nav-box">
         <input type="text" id="search-input" placeholder="🔍 Rechercher une ligne ou un arrêt..." onkeyup="filtrerBus()">
-        <div style="display: flex; gap: 10px;">
+        <div class="button-group">
             <button class="btn-green" onclick="ouvrirAbonnement()">🎓 Abonnement</button>
-            <button class="btn-orange" onclick="toggleModal('modal-ticket')">🎟️ Ticket</button>
+            <button class="btn-orange" onclick="ouvrirTicket()">🎟️ Ticket</button>
         </div>
     </div>
 
@@ -60,186 +193,273 @@
         <button class="btn-dark" onclick="telechargerRecu()">📥 Télécharger Reçu PDF</button>
     </div>
 
-    <div id="liste-bus" style="margin-top:20px;">
-        </div>
+    <div id="liste-bus" style="margin-top: 20px;"></div>
 </div>
 
+<!-- Modal Abonnement -->
 <div id="modal-abo" class="modal">
     <div class="modal-content">
-        <h2 id="titre-abo">Abonnement Etudiant</h2>
+        <h2>Abonnement Etudiant</h2>
         
         <div id="selection-type">
             <button class="btn-dark" onclick="demarrerParcours('nouveau')">Créer ma 1ère Carte</button>
             <button class="btn-orange" onclick="demarrerParcours('payer')">Déjà abonné (Payer)</button>
         </div>
 
-        <div id="step-1" style="display:none;">
-            <input type="text" id="field-nom" placeholder="Nom">
-            <input type="text" id="field-prenom" placeholder="Prénom">
-            <input type="text" id="field-cin" placeholder="CIN (ex: AB123456)">
-            <div id="zone-docs">
-                <label style="font-size: 12px;">Attestation de scolarité :</label>
-                <input type="file" id="file-scol">
-                <label style="font-size: 12px;">Photo d'identité :</label>
-                <input type="file" id="file-photo">
+        <div id="step-1" class="hidden">
+            <div class="form-group">
+                <label>Nom</label>
+                <input type="text" id="field-nom" placeholder="Votre nom">
+            </div>
+            <div class="form-group">
+                <label>Prénom</label>
+                <input type="text" id="field-prenom" placeholder="Votre prénom">
+            </div>
+            <div class="form-group">
+                <label>CIN</label>
+                <input type="text" id="field-cin" placeholder="CIN (ex: AB123456)">
+            </div>
+            <div id="zone-docs" class="hidden">
+                <div class="form-group">
+                    <label>Attestation de scolarité</label>
+                    <input type="file" id="file-scol" accept=".pdf,.jpg,.png">
+                </div>
+                <div class="form-group">
+                    <label>Photo d'identité</label>
+                    <input type="file" id="file-photo" accept=".jpg,.png">
+                </div>
             </div>
             <button class="btn-green" onclick="validerIdentite()">Suivant</button>
         </div>
 
-        <div id="step-2" style="display:none;">
+        <div id="step-2" class="hidden">
             <h4>💳 Paiement Sécurisé</h4>
-            <input type="text" id="card-num" placeholder="N° de carte (16 chiffres)" maxlength="16">
-            <div style="display: flex; gap: 5px;">
-                <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5">
-                <input type="text" id="card-cvv" placeholder="CVV" maxlength="3">
+            <div class="form-group">
+                <label>Numéro de carte (16 chiffres)</label>
+                <input type="text" id="card-num" placeholder="0000 0000 0000 0000" maxlength="16" inputmode="numeric">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Expiration</label>
+                    <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>CVV</label>
+                    <input type="text" id="card-cvv" placeholder="CVV" maxlength="3" inputmode="numeric">
+                </div>
             </div>
             <button class="btn-green" onclick="finaliserAbonnement()">Payer et Activer</button>
         </div>
 
-        <button onclick="toggleModal('modal-abo')" style="background:#eee; color:#333; margin-top:10px;">Fermer</button>
+        <button class="btn-close" onclick="fermerModal('modal-abo')" style="margin-top: 10px;">Fermer</button>
     </div>
 </div>
 
+<!-- Modal Ticket -->
 <div id="modal-ticket" class="modal">
     <div class="modal-content">
         <h2>Achat Ticket Express</h2>
-        <label>Destination :</label>
-        <select id="ticket-dest">
-            <option value="3">Centre Ville (3 DH)</option>
-            <option value="4">Faculté Mghila (4 DH)</option>
-            <option value="5">Foum El Anceur (5 DH)</option>
-        </select>
-        <input type="text" id="t-card" placeholder="N° de carte bancaire">
+        <div class="form-group">
+            <label>Destination</label>
+            <select id="ticket-dest">
+                <option value="3">Centre Ville (3 DH)</option>
+                <option value="4">Faculté Mghila (4 DH)</option>
+                <option value="5">Foum El Anceur (5 DH)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Numéro de carte bancaire</label>
+            <input type="text" id="t-card" placeholder="0000 0000 0000 0000" maxlength="16" inputmode="numeric">
+        </div>
         <button class="btn-orange" onclick="validerTicket()">Acheter le Ticket</button>
-        <button onclick="toggleModal('modal-ticket')" style="background:#eee; color:#333;">Annuler</button>
+        <button class="btn-close" onclick="fermerModal('modal-ticket')">Annuler</button>
     </div>
 </div>
 
 <script>
     let busData = [];
-    let mode = ''; // 'nouveau' ou 'payer'
+    let mode = '';
+    let currentUser = null;
 
     // Initialisation
-   async function init() {
-    try {
-        console.log("Tentative de récupération des bus...");
-        const res = await fetch('/api/trajets'); 
-        if (!res.ok) throw new Error("Erreur serveur");
-        busData = await res.json();
-        console.log("Bus reçus :", busData);
-        renderBus(busData);
-    } catch (e) { 
-        console.error("Erreur chargement bus :", e);
-        // Affichage de secours si le serveur ne répond pas
-        renderBus([
-            { ligne: "Ligne 01", itineraire: "Riad Salam - EST" },
-            { ligne: "Ligne 17", itineraire: "Beni Mellal - Kasba Tadla" }
-        ]);
+    async function init() {
+        try {
+            const res = await fetch('/api/trajets'); 
+            if (!res.ok) throw new Error("Erreur serveur");
+            busData = await res.json();
+            renderBus(busData);
+        } catch (e) { 
+            console.error("Erreur chargement bus :", e);
+            busData = [
+                { ligne: "Ligne 01", itineraire: "Riad Salam - EST" },
+                { ligne: "Ligne 17", itineraire: "Beni Mellal - Kasba Tadla" },
+                { ligne: "Ligne 05", itineraire: "Centre Ville - Gare" }
+            ];
+            renderBus(busData);
+        }
     }
-}
 
     function renderBus(data) {
         const container = document.getElementById('liste-bus');
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #999;">Aucune ligne disponible</p>';
+            return;
+        }
         container.innerHTML = data.map(b => `
-            <div style="background:white; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid var(--secondary); display:flex; justify-content:space-between;">
+            <div class="bus-line">
                 <strong>${b.ligne}</strong>
                 <span>${b.itineraire}</span>
             </div>
         `).join('');
     }
 
+    function filtrerBus() {
+        const search = document.getElementById('search-input').value.toLowerCase();
+        const filtered = busData.filter(b => 
+            b.ligne.toLowerCase().includes(search) || 
+            b.itineraire.toLowerCase().includes(search)
+        );
+        renderBus(filtered);
+    }
+
     function toggleModal(id) {
-        const m = document.getElementById(id);
-        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        const modal = document.getElementById(id);
+        modal.classList.toggle('active');
+    }
+
+    function fermerModal(id) {
+        const modal = document.getElementById(id);
+        modal.classList.remove('active');
     }
 
     function ouvrirAbonnement() {
-        document.getElementById('selection-type').style.display = 'block';
-        document.getElementById('step-1').style.display = 'none';
-        document.getElementById('step-2').style.display = 'none';
+        document.getElementById('selection-type').classList.remove('hidden');
+        document.getElementById('step-1').classList.add('hidden');
+        document.getElementById('step-2').classList.add('hidden');
         toggleModal('modal-abo');
+    }
+
+    function ouvrirTicket() {
+        toggleModal('modal-ticket');
     }
 
     function demarrerParcours(m) {
         mode = m;
-        document.getElementById('selection-type').style.display = 'none';
-        document.getElementById('step-1').style.display = 'block';
-        // Si déjà abonné, on cache les imports de documents
-        document.getElementById('zone-docs').style.display = (mode === 'payer') ? 'none' : 'block';
+        document.getElementById('selection-type').classList.add('hidden');
+        document.getElementById('step-1').classList.remove('hidden');
+        document.getElementById('zone-docs').classList.toggle('hidden', mode === 'payer');
     }
 
     function validerIdentite() {
-        const nom = document.getElementById('field-nom').value;
-        const prenom = document.getElementById('field-prenom').value;
-        const cin = document.getElementById('field-cin').value;
-        const cinRegex = /^[A-Z]{1,2}[0-9]{4,6}$/i;
+        const nom = document.getElementById('field-nom').value.trim();
+        const prenom = document.getElementById('field-prenom').value.trim();
+        const cin = document.getElementById('field-cin').value.trim().toUpperCase();
+        const cinRegex = /^[A-Z]{1,2}[0-9]{4,6}$/;
 
-        if(!nom || !prenom || !cin) return alert("Veuillez remplir tous les champs.");
-        if(!cinRegex.test(cin)) return alert("Format de CIN invalide (ex: AB123456)");
+        if (!nom || !prenom || !cin) {
+            alert("Veuillez remplir tous les champs.");
+            return;
+        }
         
-        if(mode === 'nouveau') {
+        if (!cinRegex.test(cin)) {
+            alert("Format de CIN invalide (ex: AB123456)");
+            return;
+        }
+        
+        if (mode === 'nouveau') {
             const scol = document.getElementById('file-scol').files[0];
             const photo = document.getElementById('file-photo').files[0];
-            if(!scol || !photo) return alert("Veuillez importer l'attestation et la photo.");
+            if (!scol || !photo) {
+                alert("Veuillez importer l'attestation et la photo.");
+                return;
+            }
         }
 
-        document.getElementById('step-1').style.display = 'none';
-        document.getElementById('step-2').style.display = 'block';
+        document.getElementById('step-1').classList.add('hidden');
+        document.getElementById('step-2').classList.remove('hidden');
     }
 
     function finaliserAbonnement() {
-        const cNum = document.getElementById('card-num').value;
-        if(cNum.length < 16) return alert("Carte bancaire invalide.");
+        const cardNum = document.getElementById('card-num').value.trim();
+        const cardExp = document.getElementById('card-exp').value.trim();
+        const cardCvv = document.getElementById('card-cvv').value.trim();
+
+        if (cardNum.length < 16) {
+            alert("Numéro de carte invalide.");
+            return;
+        }
+        
+        if (!/^\d{2}\/\d{2}$/.test(cardExp)) {
+            alert("Format d'expiration invalide (MM/AA)");
+            return;
+        }
+        
+        if (cardCvv.length < 3) {
+            alert("CVV invalide.");
+            return;
+        }
 
         const nom = document.getElementById('field-nom').value.toUpperCase();
         const prenom = document.getElementById('field-prenom').value.toUpperCase();
         const cin = document.getElementById('field-cin').value.toUpperCase();
 
+        currentUser = { nom, prenom, cin, type: 'ABONNEMENT' };
+
         alert("Paiement réussi !");
         
-        // Affichage de la carte
-        document.getElementById('res-nom').innerText = nom + " " + prenom;
-        document.getElementById('res-cin').innerText = "CIN: " + cin;
+        document.getElementById('res-nom').innerText = `${nom} ${prenom}`;
+        document.getElementById('res-cin').innerText = `CIN: ${cin}`;
         
-        const qrc = document.getElementById('qrcode');
-        qrc.innerHTML = "";
-        new QRCode(qrc, { text: KARAMABUS-ABO-${cin}, width: 128, height: 128 });
+        const qrcContainer = document.getElementById('qrcode');
+        qrcContainer.innerHTML = "";
+        new QRCode(qrcContainer, { 
+            text: `KARAMABUS-ABO-${cin}`, 
+            width: 128, 
+            height: 128 
+        });
         
-        document.getElementById('result-card').style.display = 'block';
-        toggleModal('modal-abo');
+        document.getElementById('result-card').classList.add('active');
+        fermerModal('modal-abo');
         telechargerRecu("ABONNEMENT", nom, cin);
     }
 
     function validerTicket() {
-        const cNum = document.getElementById('t-card').value;
-        if(cNum.length < 16) return alert("Carte bancaire invalide.");
+        const cardNum = document.getElementById('t-card').value.trim();
+        if (cardNum.length < 16) {
+            alert("Numéro de carte invalide.");
+            return;
+        }
         
-        const dest = document.getElementById('ticket-dest');
-        const label = dest.options[dest.selectedIndex].text;
+        const destSelect = document.getElementById('ticket-dest');
+        const destLabel = destSelect.options[destSelect.selectedIndex].text;
         
+        currentUser = { nom: "CLIENT", prenom: "PASSAGER", type: 'TICKET' };
+
         alert("Ticket acheté ! Téléchargement du reçu...");
-        telechargerRecu("TICKET UNITAIRE", "CLIENT PASSAGER", label);
-        toggleModal('modal-ticket');
+        telechargerRecu("TICKET UNITAIRE", "CLIENT PASSAGER", destLabel);
+        fermerModal('modal-ticket');
     }
 
     function telechargerRecu(type, nom, info) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const date = new Date().toLocaleString();
+        const date = new Date().toLocaleString('fr-FR');
 
         doc.setFontSize(20);
         doc.text("RECU KARAMA BUS", 20, 20);
+        
         doc.setFontSize(12);
-        doc.text(Type: ${type}, 20, 40);
-        doc.text(Date: ${date}, 20, 50);
-        doc.text(Titulaire: ${nom}, 20, 60);
-        doc.text(Détails: ${info}, 20, 70);
+        doc.text(`Type: ${type}`, 20, 40);
+        doc.text(`Date: ${date}`, 20, 50);
+        doc.text(`Titulaire: ${nom}`, 20, 60);
+        doc.text(`Détails: ${info}`, 20, 70);
         doc.text("Merci d'utiliser nos lignes de transport.", 20, 90);
         
-        doc.save(Recu_Karamabus_${nom}.pdf);
+        doc.save(`Recu_Karamabus_${nom.replace(/\s+/g, '_')}.pdf`);
     }
 
-    init();
+    // Initialiser au chargement
+    window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>

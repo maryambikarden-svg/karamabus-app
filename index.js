@@ -1,25 +1,36 @@
 const express = require('express');
-const app = express();
 const path = require('path');
 
-// Permet au serveur de lire les fichiers (HTML, JSON, etc.) à la racine
-app.use(express.static(__dirname));
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.static(path.join(__dirname)));
 app.use(express.json());
 
-// ROUTE 1 : Envoie l'interface visuelle (ton index.html)
+// Route principale - Servir l'interface HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ROUTE 2 : Envoie les données des bus à l'interface
+// Route API - Retourner les trajets des bus
 app.get('/api/trajets', (req, res) => {
-    res.json([
+    const trajets = [
         { ligne: "Ligne 01", itineraire: "Riad Salam - EST" },
-        { ligne: "Ligne 17", itineraire: "Beni Mellal - Kasba Tadla" },
+        { ligne: "Ligne 05", itineraire: "Centre Ville - Gare" },
+        { ligne: "Ligne 06", itineraire: "Centre Ville - Université Mghila" },
         { ligne: "Ligne 14", itineraire: "Beni Mellal - Foum Oudi" },
-        { ligne: "Ligne 06", itineraire: "Centre Ville - Université Mghila" }
-    ]);
+        { ligne: "Ligne 17", itineraire: "Beni Mellal - Kasba Tadla" }
+    ];
+    res.json(trajets);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Serveur prêt sur le port ${PORT}`));
+// Gestion des erreurs 404
+app.use((req, res) => {
+    res.status(404).json({ error: "Route non trouvée" });
+});
+
+// Démarrer le serveur
+app.listen(PORT, () => {
+    console.log(`🚌 Serveur Karamabus démarré sur http://localhost:${PORT}`);
+});
